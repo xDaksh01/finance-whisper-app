@@ -70,14 +70,14 @@ const SavingsGoalCard = ({ goal }: SavingsGoalCardProps) => {
         
         <Progress 
           value={percentComplete} 
-          className="h-2 bg-slate-200" 
-          indicatorClassName={cn(
+          className={cn(
+            "h-2 bg-slate-200",
             isCompleted 
               ? "bg-finance-secondary" 
               : isNearDeadline 
                 ? "bg-finance-warning" 
                 : "bg-finance-primary"
-          )} 
+          )}
         />
         
         <div className="flex justify-between items-center text-sm pt-1">

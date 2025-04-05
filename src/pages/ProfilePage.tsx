@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "@/components/ui/use-toast";
+import { useState } from "react";
 
 const MenuLink = ({ 
   icon, 
@@ -33,6 +36,31 @@ const MenuLink = ({
 );
 
 const ProfilePage = () => {
+  const { user, profile, signOut } = useAuth();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  const handleSignOut = async () => {
+    setIsSigningOut(true);
+    try {
+      await signOut();
+    } catch (error) {
+      toast({
+        title: "Error signing out",
+        description: "Please try again later",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSigningOut(false);
+    }
+  };
+
+  const getInitials = () => {
+    if (profile?.first_name || profile?.last_name) {
+      return `${profile.first_name?.[0] || ''}${profile.last_name?.[0] || ''}`.toUpperCase();
+    }
+    return user?.email?.[0].toUpperCase() || 'U';
+  };
+
   return (
     <div className="pb-24 max-w-md mx-auto">
       {/* Header */}
@@ -47,13 +75,17 @@ const ProfilePage = () => {
           <CardContent className="p-4">
             <div className="flex items-center">
               <Avatar className="h-16 w-16 border-2 border-white shadow-sm">
-                <AvatarImage src="/placeholder.svg" alt="User" />
-                <AvatarFallback>JD</AvatarFallback>
+                <AvatarImage src={profile?.avatar_url || "/placeholder.svg"} alt="User" />
+                <AvatarFallback>{getInitials()}</AvatarFallback>
               </Avatar>
               
               <div className="ml-4">
-                <h2 className="font-bold text-slate-900">John Doe</h2>
-                <p className="text-sm text-slate-500">john.doe@example.com</p>
+                <h2 className="font-bold text-slate-900">
+                  {profile?.first_name && profile?.last_name 
+                    ? `${profile.first_name} ${profile.last_name}` 
+                    : user?.email || "User"}
+                </h2>
+                <p className="text-sm text-slate-500">{user?.email}</p>
               </div>
             </div>
             
@@ -144,8 +176,9 @@ const ProfilePage = () => {
             
             <MenuLink 
               icon={<LogOut size={16} />} 
-              label="Sign Out" 
+              label={isSigningOut ? "Signing out..." : "Sign Out"} 
               endContent={<span className="text-sm text-slate-400">v1.0.0</span>}
+              onClick={handleSignOut}
             />
           </CardContent>
         </Card>
