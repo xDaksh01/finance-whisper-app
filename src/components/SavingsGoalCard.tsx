@@ -1,6 +1,7 @@
 
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export interface SavingsGoal {
   id: string;
@@ -16,6 +17,8 @@ interface SavingsGoalCardProps {
 }
 
 const SavingsGoalCard = ({ goal }: SavingsGoalCardProps) => {
+  const isMobile = useIsMobile();
+  
   const percentComplete = Math.min(
     Math.round((goal.currentAmount / goal.targetAmount) * 100),
     100
@@ -43,9 +46,17 @@ const SavingsGoalCard = ({ goal }: SavingsGoalCardProps) => {
   }).format(goal.targetAmount);
 
   return (
-    <div className="savings-goal-card animate-slide-in-bottom">
+    <div className={cn(
+      "savings-goal-card animate-slide-in-bottom",
+      isMobile ? "p-3" : "p-4"
+    )}>
       <div className="flex items-start justify-between mb-2">
-        <h3 className="text-lg font-semibold text-slate-900">{goal.name}</h3>
+        <h3 className={cn(
+          "font-semibold text-slate-900",
+          isMobile ? "text-base" : "text-lg"
+        )}>
+          {goal.name}
+        </h3>
         <div className={cn(
           "text-xs font-semibold px-2 py-1 rounded-full",
           isCompleted 
