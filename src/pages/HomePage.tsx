@@ -1,11 +1,13 @@
 
 import { useState, useEffect } from "react";
-import { ArrowUpRight, TrendingUp, ArrowDownRight, Plus } from "lucide-react";
+import { ArrowUpRight, TrendingUp, ArrowDownRight, Plus, Settings, Bell, HelpCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import ExpenseCard, { Expense } from "@/components/ExpenseCard";
 import SavingsGoalCard, { SavingsGoal } from "@/components/SavingsGoalCard";
+import BudgetSlider, { BudgetCategory } from "@/components/BudgetSlider";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Mock data - in a real app, this would come from an API
 const mockExpenses: Expense[] = [
@@ -51,14 +53,61 @@ const mockSavingsGoals: SavingsGoal[] = [
   }
 ];
 
-const mockMonthlyBudget = 2500;
-const mockMonthlySpent = 1230;
+const mockBudgetCategories: BudgetCategory[] = [
+  {
+    id: "1",
+    name: "Food",
+    currentAmount: 500,
+    budgetAmount: 2000,
+    color: "bg-finance-primary"
+  },
+  {
+    id: "2",
+    name: "Transport",
+    currentAmount: 300,
+    budgetAmount: 1000,
+    color: "bg-finance-info"
+  },
+  {
+    id: "3",
+    name: "Health",
+    currentAmount: 200,
+    budgetAmount: 1000,
+    color: "bg-green-500"
+  },
+  {
+    id: "4",
+    name: "Education",
+    currentAmount: 400,
+    budgetAmount: 1000,
+    color: "bg-amber-500"
+  },
+  {
+    id: "5",
+    name: "Entertainment",
+    currentAmount: 300,
+    budgetAmount: 1000,
+    color: "bg-purple-500"
+  },
+  {
+    id: "6",
+    name: "Gaming",
+    currentAmount: 150,
+    budgetAmount: 500,
+    color: "bg-finance-danger"
+  }
+];
+
+const mockMonthlyBudget = 6000;
+const mockMonthlySpent = 4000;
 
 const HomePage = () => {
+  const isMobile = useIsMobile();
   const [greeting, setGreeting] = useState("");
   const [timeOfDay, setTimeOfDay] = useState("");
   const [recentExpenses, setRecentExpenses] = useState<Expense[]>([]);
   const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
+  const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>([]);
   
   useEffect(() => {
     // Set greeting based on time of day
@@ -77,6 +126,7 @@ const HomePage = () => {
     // In a real app, these would be API calls
     setRecentExpenses(mockExpenses);
     setSavingsGoals(mockSavingsGoals);
+    setBudgetCategories(mockBudgetCategories);
   }, []);
   
   const budgetProgress = (mockMonthlySpent / mockMonthlyBudget) * 100;
@@ -90,20 +140,30 @@ const HomePage = () => {
   return (
     <div className="pb-24 max-w-md mx-auto">
       {/* Header */}
-      <div className="px-4 pt-8 pb-4">
-        <h1 className="text-xl font-bold text-slate-900">{greeting}</h1>
-        <p className="text-slate-600 mt-1">
-          Here's your financial summary for this {timeOfDay}
-        </p>
+      <div className="px-4 pt-6 pb-4 flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900">{greeting}</h1>
+          <p className="text-slate-600 mt-1">
+            Your financial overview
+          </p>
+        </div>
+        <div className="flex space-x-2">
+          <Button variant="ghost" size="icon" className="rounded-full">
+            <Bell size={20} className="text-slate-600" />
+          </Button>
+          <Button variant="ghost" size="icon" className="rounded-full">
+            <Settings size={20} className="text-slate-600" />
+          </Button>
+        </div>
       </div>
       
       {/* Budget Overview */}
-      <div className="px-4 mb-4">
-        <Card>
+      <div className="px-4 mb-6">
+        <Card className="border bg-white shadow-sm">
           <CardContent className="p-4">
-            <div className="flex items-start justify-between mb-2">
+            <div className="flex items-start justify-between mb-3">
               <div>
-                <h2 className="text-sm font-medium text-slate-600">Monthly Budget</h2>
+                <h2 className="text-lg font-bold text-slate-900">Monthly Budget</h2>
                 <p className="text-2xl font-bold text-slate-900">{formattedBudgetLeft} left</p>
               </div>
               <div className="bg-finance-primary/10 p-2 rounded-full">
@@ -111,72 +171,57 @@ const HomePage = () => {
               </div>
             </div>
             
-            <Progress value={budgetProgress} className="h-2 bg-slate-200" />
+            <div className="relative h-2 bg-slate-200 rounded-full mb-2">
+              <div 
+                className="absolute left-0 top-0 h-full bg-finance-primary rounded-full"
+                style={{ width: `${budgetProgress}%` }}
+              />
+              <div 
+                className="absolute top-1/2 transform -translate-y-1/2 h-4 w-4 bg-white border-2 border-finance-primary rounded-full"
+                style={{ left: `${budgetProgress}%`, marginLeft: "-8px" }}
+              />
+            </div>
             
-            <div className="flex justify-between mt-2 text-sm">
-              <span className="text-slate-600">Spent</span>
-              <span className="font-medium">{budgetProgress.toFixed(0)}%</span>
+            <div className="flex justify-between mt-1 text-sm">
+              <span className="text-slate-600">
+                ${mockMonthlySpent.toLocaleString()} spent
+              </span>
+              <span className="font-medium">
+                ${mockMonthlyBudget.toLocaleString()} budget
+              </span>
             </div>
           </CardContent>
         </Card>
       </div>
       
-      {/* Financial Insights */}
-      <div className="px-4 mb-6">
-        <div className="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide">
-          <Card className="min-w-[160px] bg-finance-primary/5 border-finance-primary/20">
-            <CardContent className="p-4">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm text-slate-600">This Week</p>
-                  <p className="text-lg font-bold text-slate-900">$354</p>
-                </div>
-                <div className="bg-green-100 p-1 rounded-full">
-                  <ArrowDownRight size={16} className="text-green-600" />
-                </div>
-              </div>
-              <p className="text-xs text-green-600 mt-1">12% less than last week</p>
-            </CardContent>
-          </Card>
-          
-          <Card className="min-w-[160px] bg-amber-50 border-amber-200">
-            <CardContent className="p-4">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm text-slate-600">AI Insights</p>
-                  <p className="text-lg font-bold text-slate-900">3 tips</p>
-                </div>
-                <div className="bg-amber-100 p-1 rounded-full">
-                  <ArrowUpRight size={16} className="text-amber-600" />
-                </div>
-              </div>
-              <p className="text-xs text-amber-600 mt-1">Tap to view spending insights</p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-      
-      {/* Recent Expenses */}
+      {/* Budget Categories */}
       <div className="px-4 mb-6">
         <div className="flex justify-between items-center mb-3">
-          <h2 className="text-lg font-bold text-slate-900">Recent Expenses</h2>
-          <Button variant="outline" size="sm" className="text-xs">View All</Button>
+          <h2 className="text-lg font-bold text-slate-900">Budget Categories</h2>
+          <Button variant="outline" size="sm" className="text-xs">Track</Button>
         </div>
         
-        <div className="space-y-3">
-          {recentExpenses.map(expense => (
-            <ExpenseCard key={expense.id} expense={expense} />
-          ))}
-          
-          <Button variant="outline" className="w-full flex items-center justify-center gap-2 py-6 border-dashed">
-            <Plus size={16} />
-            <span>Add New Expense</span>
-          </Button>
-        </div>
+        <Card className="border bg-white shadow-sm">
+          <CardContent className="p-4">
+            <div className="space-y-1">
+              {budgetCategories.map(category => (
+                <BudgetSlider key={category.id} category={category} />
+              ))}
+            </div>
+            
+            <Button 
+              variant="outline" 
+              className="w-full mt-4 flex items-center justify-center gap-2"
+            >
+              <Plus size={16} />
+              <span>Add Category</span>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
       
       {/* Savings Goals */}
-      <div className="px-4">
+      <div className="px-4 mb-6">
         <div className="flex justify-between items-center mb-3">
           <h2 className="text-lg font-bold text-slate-900">Savings Goals</h2>
           <Button variant="outline" size="sm" className="text-xs">Add Goal</Button>
@@ -187,6 +232,21 @@ const HomePage = () => {
             <SavingsGoalCard key={goal.id} goal={goal} />
           ))}
         </div>
+      </div>
+      
+      {/* App Support/Help */}
+      <div className="px-4">
+        <Card className="border-dashed border-2 border-slate-200 bg-slate-50">
+          <CardContent className="p-4 flex justify-between items-center">
+            <div>
+              <h3 className="font-medium text-slate-900">Need help?</h3>
+              <p className="text-sm text-slate-600">Get support with your budget</p>
+            </div>
+            <Button variant="ghost" size="icon" className="rounded-full">
+              <HelpCircle size={20} className="text-slate-600" />
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
